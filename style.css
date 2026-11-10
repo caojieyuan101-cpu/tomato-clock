@@ -1,0 +1,202 @@
+:root {
+  --bg: #fbf7f4;
+  --surface: #ffffff;
+  --ink: #2b2522;
+  --ink-2: #6b625d;
+  --ink-3: #9a918b;
+  --line: #ece5df;
+  --accent: #e5533d;
+  --accent-soft: #fbe3de;
+  --rest: #3f9a52;
+  --rest-soft: #dff0e2;
+  --free: #3d6fe5;
+  --free-soft: #e0e8fb;
+  --mode: var(--accent);
+  --mode-soft: var(--accent-soft);
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171412;
+    --surface: #221e1b;
+    --ink: #f2ece8;
+    --ink-2: #b8aea8;
+    --ink-3: #847a74;
+    --line: #342e2a;
+    --accent: #f06a52;
+    --accent-soft: #3d2420;
+    --rest: #5cb86d;
+    --rest-soft: #1f3324;
+    --free: #6b93f0;
+    --free-soft: #1f2a42;
+    --shadow: none;
+  }
+}
+body[data-mode="short"], body[data-mode="long"] { --mode: var(--rest); --mode-soft: var(--rest-soft); }
+body[data-mode="free"] { --mode: var(--free); --mode-soft: var(--free-soft); }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100vh;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+h2 { font-size: 22px; margin: 4px 0 16px; }
+h3 { font-size: 15px; margin: 0 0 12px; color: var(--ink-2); font-weight: 600; }
+.muted { color: var(--ink-3); font-size: 13px; margin: 0 0 12px; }
+
+main {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 16px 16px calc(84px + env(safe-area-inset-bottom));
+}
+.view { display: none; }
+.view.active { display: block; }
+
+/* ---------- 计时 ---------- */
+.modes {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  background: var(--surface); border-radius: 999px; padding: 4px; box-shadow: var(--shadow);
+}
+.mode {
+  border: 0; background: none; padding: 8px 0; border-radius: 999px; font-size: 14px; color: var(--ink-2);
+  white-space: nowrap;
+}
+.mode.active { background: var(--mode); color: #fff; font-weight: 600; }
+.mode:disabled { opacity: .45; cursor: not-allowed; }
+
+.dial { position: relative; width: min(72vw, 280px); aspect-ratio: 1; margin: 28px auto 20px; }
+.dial svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.track { fill: none; stroke: var(--mode-soft); stroke-width: 10; }
+.ring {
+  fill: none; stroke: var(--mode); stroke-width: 10; stroke-linecap: round;
+  stroke-dasharray: 628.32; stroke-dashoffset: 0; transition: stroke-dashoffset .3s linear;
+}
+.dial-text { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.clock { font-size: clamp(44px, 14vw, 60px); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+.status { color: var(--ink-3); font-size: 14px; margin-top: 2px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.task-box input {
+  width: 100%; padding: 12px 14px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface); outline: none; text-align: center; font-size: 16px;
+}
+.task-box input:focus { border-color: var(--mode); }
+.task-box input:disabled { opacity: .7; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; min-height: 30px; }
+.chip {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+  padding: 3px 12px; font-size: 13px; color: var(--ink-2); max-width: 160px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.chip.on { border-color: var(--mode); color: var(--mode); }
+
+.controls { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 12px; margin: 18px 0 22px; }
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius);
+  padding: 12px 0; font-weight: 600; display: inline-flex; align-items: center; justify-content: center;
+}
+.btn.primary { background: var(--mode); border-color: var(--mode); color: #fff; font-size: 17px; }
+.btn.ghost { color: var(--ink-2); }
+.btn.small { padding: 8px 14px; font-size: 14px; font-weight: 500; }
+.btn.danger { color: #c0392b; margin-top: 12px; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-row.end { justify-content: flex-end; margin-top: 8px; }
+
+.today-strip, .headline {
+  display: grid; grid-template-columns: repeat(3, 1fr); text-align: center;
+  background: var(--surface); border-radius: var(--radius); padding: 14px 6px; box-shadow: var(--shadow);
+}
+.today-strip span, .headline b { display: block; font-size: 18px; white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
+.today-strip small, .headline small { color: var(--ink-3); font-size: 12px; }
+
+/* ---------- 统计 ---------- */
+.summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.card { background: var(--surface); border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow); min-width: 0; }
+.card small { color: var(--ink-3); font-size: 12px; display: block; }
+.card b { font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); margin: 16px 0 8px; background: var(--surface); border-radius: 10px; padding: 3px; box-shadow: var(--shadow); }
+.seg button { border: 0; background: none; padding: 6px 0; border-radius: 8px; color: var(--ink-2); }
+.seg button.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+.period-nav { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 10px; }
+.period-label { font-weight: 600; }
+.icon-btn { border: 0; background: none; font-size: 26px; line-height: 1; width: 40px; height: 36px; color: var(--ink-2); border-radius: 8px; }
+.icon-btn:disabled { opacity: .3; }
+
+.panel { background: var(--surface); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.panel .headline { box-shadow: none; padding: 0 0 10px; }
+
+.chart-wrap { position: relative; }
+#chart { width: 100%; height: 180px; display: block; overflow: visible; }
+#chart .bar { fill: var(--accent); }
+#chart .bar.dim { fill: var(--accent); opacity: .55; }
+#chart .hit { fill: transparent; }
+#chart .hit:hover + .bar, #chart .bar.hover { opacity: 1; filter: brightness(1.1); }
+#chart .grid { stroke: var(--line); stroke-width: 1; }
+#chart .axis { fill: var(--ink-3); font-size: 10px; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--ink); color: var(--bg);
+  font-size: 12px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, -100%);
+}
+
+.by-task .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; margin-bottom: 10px; font-size: 14px; }
+.by-task .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.by-task .val { color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 13px; }
+.by-task .meter { grid-column: 1 / -1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.by-task .meter i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.empty { color: var(--ink-3); text-align: center; padding: 18px 0; font-size: 14px; }
+
+/* ---------- 记录 ---------- */
+.history-head { display: flex; align-items: center; justify-content: space-between; }
+.history-head h2 { margin: 4px 0 12px; }
+.day-group { margin-bottom: 14px; }
+.day-title { display: flex; justify-content: space-between; color: var(--ink-3); font-size: 13px; padding: 0 4px 6px; }
+.rec {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px;
+  background: var(--surface); padding: 10px 12px; border-radius: 10px; margin-bottom: 6px; box-shadow: var(--shadow);
+}
+.rec .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.rec .meta { color: var(--ink-3); font-size: 12px; }
+.rec .d { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 14px; }
+.rec .more { border: 0; background: none; color: var(--ink-3); font-size: 18px; padding: 0 4px; }
+.tag { font-size: 11px; padding: 0 6px; border-radius: 4px; background: var(--free-soft); color: var(--free); margin-left: 6px; }
+.load-more { width: 100%; }
+
+/* ---------- 设置 / 表单 ---------- */
+.form label { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.form label:last-child { border-bottom: 0; }
+.form input[type=number] { width: 80px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); text-align: center; }
+.form input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); }
+.form .btn-row label.btn { border-bottom: 1px solid var(--line); padding: 8px 14px; }
+
+dialog {
+  border: 0; border-radius: 16px; padding: 20px; width: min(92vw, 380px);
+  background: var(--surface); color: var(--ink);
+}
+dialog::backdrop { background: rgba(0,0,0,.35); }
+dialog label { display: block; margin-bottom: 12px; font-size: 14px; color: var(--ink-2); }
+dialog input { display: block; width: 100%; margin-top: 4px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+
+/* ---------- 底部导航 ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
+}
+.tabbar button { border: 0; background: none; padding: 8px 0 6px; font-size: 12px; color: var(--ink-3); display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.tabbar button span { font-size: 20px; line-height: 1; filter: grayscale(1); opacity: .6; }
+.tabbar button.active { color: var(--accent); font-weight: 600; }
+.tabbar button.active span { filter: none; opacity: 1; }
+
+@media (max-width: 360px) {
+  .mode { font-size: 13px; }
+}
+dialog .del { color: #c0392b; margin-right: auto; }

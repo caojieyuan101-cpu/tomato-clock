@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e5533d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="番茄钟">
+<title>番茄钟</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <!-- ========== 计时 ========== -->
+  <section id="view-timer" class="view active">
+    <div class="modes" role="tablist">
+      <button data-mode="focus" class="mode active">专注</button>
+      <button data-mode="short" class="mode">短休息</button>
+      <button data-mode="long" class="mode">长休息</button>
+      <button data-mode="free" class="mode">自由计时</button>
+    </div>
+
+    <div class="dial">
+      <svg viewBox="0 0 220 220" aria-hidden="true">
+        <circle class="track" cx="110" cy="110" r="100"/>
+        <circle id="ring" class="ring" cx="110" cy="110" r="100"/>
+      </svg>
+      <div class="dial-text">
+        <div id="clock" class="clock">25:00</div>
+        <div id="status" class="status">准备开始</div>
+      </div>
+    </div>
+
+    <div class="task-box">
+      <input id="task" type="text" maxlength="40" placeholder="正在做什么？例如：写报告" autocomplete="off">
+      <div id="recent" class="chips"></div>
+    </div>
+
+    <div class="controls">
+      <button id="btn-reset" class="btn ghost" title="放弃本次，不记录">放弃</button>
+      <button id="btn-main" class="btn primary">开始</button>
+      <button id="btn-finish" class="btn ghost" title="提前结束并记录已用时间">完成</button>
+    </div>
+
+    <div class="today-strip">
+      <div><span id="today-total">0分钟</span><small>今日专注</small></div>
+      <div><span id="today-count">0</span><small>今日番茄</small></div>
+      <div><span id="cycle">0 / 4</span><small>本轮进度</small></div>
+    </div>
+  </section>
+
+  <!-- ========== 统计 ========== -->
+  <section id="view-stats" class="view">
+    <div class="summary">
+      <div class="card"><small>今日</small><b id="sum-day">0分钟</b></div>
+      <div class="card"><small>本周</small><b id="sum-week">0分钟</b></div>
+      <div class="card"><small>本月</small><b id="sum-month">0分钟</b></div>
+      <div class="card"><small>本年</small><b id="sum-year">0分钟</b></div>
+    </div>
+
+    <div class="seg" id="period">
+      <button data-p="day" class="active">日</button>
+      <button data-p="week">周</button>
+      <button data-p="month">月</button>
+      <button data-p="year">年</button>
+    </div>
+
+    <div class="period-nav">
+      <button id="prev" class="icon-btn" aria-label="上一个">‹</button>
+      <div id="period-label" class="period-label"></div>
+      <button id="next" class="icon-btn" aria-label="下一个">›</button>
+    </div>
+
+    <div class="panel">
+      <div class="headline">
+        <div><b id="p-total">0分钟</b><small>累计时长</small></div>
+        <div><b id="p-count">0</b><small>次数</small></div>
+        <div><b id="p-avg">0分钟</b><small id="p-avg-label">日均</small></div>
+      </div>
+      <div class="chart-wrap">
+        <svg id="chart" role="img" aria-label="时长分布柱状图"></svg>
+        <div id="tip" class="tip" hidden></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>按事项</h3>
+      <div id="by-task" class="by-task"></div>
+    </div>
+  </section>
+
+  <!-- ========== 记录 ========== -->
+  <section id="view-history" class="view">
+    <div class="history-head">
+      <h2>记录</h2>
+      <button id="btn-add" class="btn small">＋ 补录</button>
+    </div>
+    <div id="history"></div>
+  </section>
+
+  <!-- ========== 设置 ========== -->
+  <section id="view-settings" class="view">
+    <h2>设置</h2>
+    <div class="panel form">
+      <label>专注时长（分钟）<input type="number" id="s-focus" min="1" max="180"></label>
+      <label>短休息（分钟）<input type="number" id="s-short" min="1" max="60"></label>
+      <label>长休息（分钟）<input type="number" id="s-long" min="1" max="90"></label>
+      <label>每几个番茄长休息一次<input type="number" id="s-every" min="1" max="12"></label>
+      <label class="row">专注结束后自动开始休息<input type="checkbox" id="s-auto"></label>
+      <label class="row">提示音<input type="checkbox" id="s-sound"></label>
+      <label class="row">系统通知<input type="checkbox" id="s-notify"></label>
+    </div>
+    <div class="panel form">
+      <h3>数据</h3>
+      <p class="muted">所有记录只保存在本设备浏览器中。换设备或清理浏览器前请先导出备份。</p>
+      <div class="btn-row">
+        <button id="btn-export" class="btn small">导出 JSON</button>
+        <button id="btn-csv" class="btn small">导出 CSV</button>
+        <label class="btn small">导入<input type="file" id="file-import" accept=".json,application/json" hidden></label>
+      </div>
+      <button id="btn-clear" class="btn small danger">清空所有记录</button>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button data-view="timer" class="active"><span>⏱</span>计时</button>
+  <button data-view="stats"><span>📊</span>统计</button>
+  <button data-view="history"><span>📝</span>记录</button>
+  <button data-view="settings"><span>⚙️</span>设置</button>
+</nav>
+
+<!-- 补录 / 编辑弹窗 -->
+<dialog id="dlg">
+  <form method="dialog" id="dlg-form">
+    <h3 id="dlg-title">补录</h3>
+    <label>事项<input type="text" id="d-task" maxlength="40" required></label>
+    <label>开始时间<input type="datetime-local" id="d-start" required></label>
+    <label>时长（分钟）<input type="number" id="d-min" min="1" max="1440" required></label>
+    <div class="btn-row end">
+      <button value="delete" id="d-del" formnovalidate class="btn ghost small del">删除</button>
+      <button value="cancel" formnovalidate class="btn ghost small">取消</button>
+      <button value="ok" class="btn primary small">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>

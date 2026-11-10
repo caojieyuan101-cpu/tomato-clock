@@ -1,0 +1,14 @@
+{
+  "name": "番茄钟",
+  "short_name": "番茄钟",
+  "description": "番茄钟 + 时间记录，按日/周/月/年统计",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf7f4",
+  "theme_color": "#e5533d",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
