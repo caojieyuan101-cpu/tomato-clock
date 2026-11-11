@@ -1,4 +1,4 @@
-const CACHE = 'tomato-clock-v1';
+const CACHE = 'tomato-clock-v2';
 const ASSETS = ['./', 'index.html', 'style.css', 'app.js', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', e => {

@@ -50,15 +50,20 @@
       <div><span id="today-count">0</span><small>今日番茄</small></div>
       <div><span id="cycle">0 / 4</span><small>本轮进度</small></div>
     </div>
+
+    <div id="goal-meter" class="goal-meter">
+      <div class="goal-top"><span>今日目标</span><span id="goal-text"></span></div>
+      <div class="meter"><i id="goal-fill"></i></div>
+    </div>
   </section>
 
   <!-- ========== 统计 ========== -->
   <section id="view-stats" class="view">
     <div class="summary">
-      <div class="card"><small>今日</small><b id="sum-day">0分钟</b></div>
-      <div class="card"><small>本周</small><b id="sum-week">0分钟</b></div>
-      <div class="card"><small>本月</small><b id="sum-month">0分钟</b></div>
-      <div class="card"><small>本年</small><b id="sum-year">0分钟</b></div>
+      <div class="card"><small>今日</small><b id="sum-day">0分钟</b><span id="dl-day" class="delta"></span></div>
+      <div class="card"><small>本周</small><b id="sum-week">0分钟</b><span id="dl-week" class="delta"></span></div>
+      <div class="card"><small>本月</small><b id="sum-month">0分钟</b><span id="dl-month" class="delta"></span></div>
+      <div class="card"><small>本年</small><b id="sum-year">0分钟</b><span id="dl-year" class="delta"></span></div>
     </div>
 
     <div class="seg" id="period">
@@ -70,7 +75,7 @@
 
     <div class="period-nav">
       <button id="prev" class="icon-btn" aria-label="上一个">‹</button>
-      <div id="period-label" class="period-label"></div>
+      <button id="period-label" class="period-label" title="回到当前"></button>
       <button id="next" class="icon-btn" aria-label="下一个">›</button>
     </div>
 
@@ -80,15 +85,55 @@
         <div><b id="p-count">0</b><small>次数</small></div>
         <div><b id="p-avg">0分钟</b><small id="p-avg-label">日均</small></div>
       </div>
-      <div class="chart-wrap">
-        <svg id="chart" role="img" aria-label="时长分布柱状图"></svg>
-        <div id="tip" class="tip" hidden></div>
+      <div id="p-delta" class="p-delta"></div>
+      <div class="panel-tools">
+        <h3 id="chart-title">时间分布</h3>
+        <button id="btn-table" class="link-btn">表格</button>
       </div>
+      <div id="chart-box" class="chart-wrap">
+        <svg id="chart" role="img" aria-label="时长分布图"></svg>
+        <div class="tip" hidden></div>
+      </div>
+      <div id="legend" class="legend"></div>
+      <div id="chart-table" class="chart-table" hidden></div>
+    </div>
+
+    <div class="panel">
+      <h3>洞察</h3>
+      <div id="insights" class="insights"></div>
     </div>
 
     <div class="panel">
       <h3>按事项</h3>
       <div id="by-task" class="by-task"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-tools">
+        <h3 id="heat-title">日历</h3>
+        <div class="heat-legend" id="heat-legend"></div>
+      </div>
+      <div class="chart-wrap">
+        <svg id="heatmap" role="img" aria-label="每日专注热力图"></svg>
+        <div class="tip" hidden></div>
+      </div>
+      <div id="heat-note" class="sub"></div>
+    </div>
+
+    <div class="panel" id="habit-panel">
+      <h3>习惯</h3>
+      <div class="sub">一天中的时段 <span id="peak-hour"></span></div>
+      <div class="chart-wrap">
+        <svg id="hour-chart" role="img" aria-label="一天中各时段的专注时长"></svg>
+        <div class="tip" hidden></div>
+      </div>
+      <div id="wd-wrap">
+        <div class="sub">一周中的哪天（日均）<span id="peak-wd"></span></div>
+        <div class="chart-wrap">
+          <svg id="wd-chart" role="img" aria-label="一周中各天的日均专注时长"></svg>
+          <div class="tip" hidden></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -109,6 +154,7 @@
       <label>短休息（分钟）<input type="number" id="s-short" min="1" max="60"></label>
       <label>长休息（分钟）<input type="number" id="s-long" min="1" max="90"></label>
       <label>每几个番茄长休息一次<input type="number" id="s-every" min="1" max="12"></label>
+      <label>每日目标（分钟，0 为不设）<input type="number" id="s-goal" min="0" max="1440"></label>
       <label class="row">专注结束后自动开始休息<input type="checkbox" id="s-auto"></label>
       <label class="row">提示音<input type="checkbox" id="s-sound"></label>
       <label class="row">系统通知<input type="checkbox" id="s-notify"></label>
