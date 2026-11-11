@@ -12,7 +12,7 @@ const KEY = { records: 'tc.records', settings: 'tc.settings', timer: 'tc.timer' 
 const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
-const DEFAULT_SETTINGS = { focus: 25, short: 5, long: 15, longEvery: 4, goal: 120, autoBreak: false, sound: true, notify: false };
+const DEFAULT_SETTINGS = { focus: 25, short: 5, long: 15, longEvery: 4, goal: 120, autoBreak: false, sound: true, notify: false, keepAwake: true };
 const settings = Object.assign({}, DEFAULT_SETTINGS, load(KEY.settings, {}));
 
 /** 记录：{ id, task, mode: 'focus'|'free', start, end, dur(秒) } */
@@ -106,6 +106,7 @@ function start() {
   }
   timer.status = 'running';
   timer.segStart = Date.now();
+  wakeFailed = false;
   saveTimer();
   ensureTicker();
   unlockAudio();
@@ -194,6 +195,49 @@ function tick() {
   const dur = modeDurMs(timer.mode);
   if (dur && elapsed() >= dur) { complete(); return; }
   renderClock();
+}
+
+/* ---------------- 屏幕常亮 ----------------
+ * 手机锁屏或切到后台后，网页会被系统暂停，到点无法响铃。
+ * 计时进行中保持屏幕常亮，页面就一直在运行，提醒才能准时。
+ * 页面被隐藏时浏览器会自动释放常亮，回到页面时重新申请。 */
+const wakeSupported = 'wakeLock' in navigator;
+let wakeLock = null, wakeBusy = false, wakeFailed = false;
+
+const wantWake = () => settings.keepAwake && wakeSupported && timer.status === 'running' && !document.hidden;
+
+async function syncWakeLock() {
+  if (wakeBusy) return;
+  wakeBusy = true;
+  try {
+    if (wantWake() && !wakeLock && !wakeFailed) {
+      try {
+        const lock = await navigator.wakeLock.request('screen');
+        wakeLock = lock;
+        lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; renderWakeHint(); });
+      } catch {
+        wakeFailed = true; // 例如省电模式下被拒绝；下次开始计时再试
+      }
+    } else if (!wantWake() && wakeLock) {
+      const lock = wakeLock;
+      wakeLock = null;
+      try { await lock.release(); } catch {}
+    }
+  } finally {
+    wakeBusy = false;
+  }
+  // 等待期间状态可能变了，再对齐一次
+  if (wantWake() !== !!wakeLock && !(wantWake() && wakeFailed)) syncWakeLock();
+  renderWakeHint();
+}
+
+function renderWakeHint() {
+  const el = $('#wake-hint');
+  if (timer.status !== 'running') { el.hidden = true; return; }
+  el.hidden = false;
+  el.textContent = wakeLock
+    ? '🔆 屏幕保持常亮中 · 请不要锁屏，到点才能准时提醒'
+    : '提示：锁屏或切到其他 App 后，到点不会提醒（回来时会自动补上记录）';
 }
 
 /* ---------------- 提醒：声音 + 通知 ---------------- */
@@ -1093,6 +1137,9 @@ function renderSettings() {
   $('#s-auto').checked = settings.autoBreak;
   $('#s-sound').checked = settings.sound;
   $('#s-notify').checked = settings.notify;
+  $('#s-awake').checked = settings.keepAwake && wakeSupported;
+  $('#s-awake').disabled = !wakeSupported;
+  if (!wakeSupported) $('#s-awake-note').textContent = '当前浏览器不支持（iPhone 需 iOS 16.4 以上）';
 }
 
 function bindNum(id, key, min, max) {
@@ -1112,6 +1159,7 @@ bindNum('#s-every', 'longEvery', 1, 12);
 bindNum('#s-goal', 'goal', 0, 1440);
 $('#s-auto').onchange = e => { settings.autoBreak = e.target.checked; saveSettings(); };
 $('#s-sound').onchange = e => { settings.sound = e.target.checked; saveSettings(); if (settings.sound) beep(); };
+$('#s-awake').onchange = e => { settings.keepAwake = e.target.checked; saveSettings(); render(); };
 $('#s-notify').onchange = async e => {
   if (e.target.checked) {
     if (!('Notification' in window)) { toast('当前浏览器不支持通知'); e.target.checked = false; return; }
@@ -1219,6 +1267,7 @@ window.addEventListener('storage', e => {
 });
 
 function render() {
+  syncWakeLock();
   if (currentView === 'timer') renderTimer();
   if (currentView === 'stats') renderStats();
   if (currentView === 'history') renderHistory();

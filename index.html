@@ -44,6 +44,7 @@
       <button id="btn-main" class="btn primary">开始</button>
       <button id="btn-finish" class="btn ghost" title="提前结束并记录已用时间">完成</button>
     </div>
+    <div id="wake-hint" class="wake-hint" hidden></div>
 
     <div class="today-strip">
       <div><span id="today-total">0分钟</span><small>今日专注</small></div>
@@ -159,6 +160,7 @@
       <label class="row">专注结束后自动开始休息<input type="checkbox" id="s-auto"></label>
       <label class="row">提示音<input type="checkbox" id="s-sound"></label>
       <label class="row">系统通知<input type="checkbox" id="s-notify"></label>
+      <label class="row"><span>计时时保持屏幕常亮<small id="s-awake-note" class="note">锁屏后网页会被暂停，到点无法提醒</small></span><input type="checkbox" id="s-awake"></label>
     </div>
     <div class="panel form">
       <h3>数据</h3>
