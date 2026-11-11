@@ -784,6 +784,72 @@ function renderHabits(period, a, b, list, dt) {
   })), { height: 130 });
 }
 
+/* ---------------- 环形图：事项占比 ---------------- */
+function renderPie(tasks, total) {
+  const box = $('#pie');
+  if (!tasks.length || total <= 0) { box.innerHTML = ''; box.hidden = true; return; }
+  box.hidden = false;
+
+  // 按颜色槽位合并（前 7 名各自一块，其余并入「其他」），大的在前，「其他」放最后
+  const bySlot = new Map();
+  for (const t of tasks) {
+    const i = slotOf(t.task);
+    const it = bySlot.get(i) || { i, name: slotName(i), sec: 0, n: 0 };
+    it.sec += t.sec; it.n++;
+    bySlot.set(i, it);
+  }
+  const slices = [...bySlot.values()].sort((x, y) => (x.i === SLOTS) - (y.i === SLOTS) || y.sec - x.sec);
+
+  const S = 150, cx = S / 2, cy = S / 2, R = 70, r = 46;
+  const pt = (rad, ang) => `${(cx + rad * Math.sin(ang)).toFixed(2)},${(cy - rad * Math.cos(ang)).toFixed(2)}`;
+  const arc = (a0, a1) => {
+    if (a1 - a0 >= Math.PI * 2 - 1e-6) { // 只有一块：画完整圆环
+      return `M${pt(R, 0)}A${R},${R} 0 1 1 ${pt(R, Math.PI)}A${R},${R} 0 1 1 ${pt(R, 0)}Z` +
+             `M${pt(r, 0)}A${r},${r} 0 1 0 ${pt(r, Math.PI)}A${r},${r} 0 1 0 ${pt(r, 0)}Z`;
+    }
+    const large = a1 - a0 > Math.PI ? 1 : 0;
+    return `M${pt(R, a0)}A${R},${R} 0 ${large} 1 ${pt(R, a1)}L${pt(r, a1)}A${r},${r} 0 ${large} 0 ${pt(r, a0)}Z`;
+  };
+
+  let a = 0, paths = '';
+  slices.forEach((s, k) => {
+    const a1 = a + s.sec / total * Math.PI * 2;
+    paths += `<path class="slice" data-i="${k}" data-g="${k}" fill="${slotColor(s.i)}" d="${arc(a, a1)}" fill-rule="evenodd"/>`;
+    a = a1;
+  });
+
+  const pct = s => { const v = s.sec / total * 100; return v < 1 ? '<1%' : `${Math.round(v)}%`; };
+  box.innerHTML = `
+    <div class="pie-chart">
+      <svg viewBox="0 0 ${S} ${S}" role="img" aria-label="各事项时长占比">${paths}</svg>
+      <div class="pie-center"><b>${fmtDur(total)}</b><small>${tasks.length} 项</small></div>
+    </div>
+    <div class="pie-legend">${slices.map((s, k) => `
+      <div class="pl-row" data-i="${k}"><i style="background:${slotColor(s.i)}"></i><span class="pl-name">${esc(s.name)}${s.i === SLOTS ? ` (${s.n})` : ''}</span><span class="pl-pct">${pct(s)}</span></div>`).join('')}
+    </div>`;
+
+  const svg = box.querySelector('svg');
+  const center = box.querySelector('.pie-center');
+  const reset = () => {
+    center.innerHTML = `<b>${fmtDur(total)}</b><small>${tasks.length} 项</small>`;
+    svg.classList.remove('hovering');
+    box.querySelectorAll('.on').forEach(n => n.classList.remove('on'));
+  };
+  const show = k => {
+    const s = slices[k];
+    svg.classList.add('hovering');
+    box.querySelectorAll('.on').forEach(n => n.classList.remove('on'));
+    box.querySelectorAll(`[data-g="${k}"], .pl-row[data-i="${k}"]`).forEach(n => n.classList.add('on'));
+    center.innerHTML = `<b>${pct(s)}</b><small class="pc-name">${esc(s.name)}</small><small>${fmtDur(s.sec)}</small>`;
+  };
+  const onEvt = e => { const k = e.target.closest('[data-i]')?.dataset.i; if (k == null) reset(); else show(+k); };
+  for (const el of [svg, box.querySelector('.pie-legend')]) {
+    el.onpointermove = onEvt;
+    el.onpointerdown = onEvt;
+    el.onpointerleave = reset;
+  }
+}
+
 /* ---------------- 洞察 ---------------- */
 function renderInsights(period, a, b, list, dt, total) {
   const now = Date.now();
@@ -919,6 +985,7 @@ function renderStats() {
     map.set(r.task, it);
   }
   const tasks = [...map.values()].sort((x, y) => y.sec - x.sec);
+  renderPie(tasks, total);
   const box = $('#by-task');
   if (!tasks.length) box.innerHTML = '<div class="empty">这段时间还没有记录</div>';
   else {

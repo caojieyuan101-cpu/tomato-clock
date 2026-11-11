@@ -213,6 +213,26 @@ svg .cell-num.inv { fill: #fff; }
 .goal-meter .meter { height: 8px; border-radius: 4px; background: var(--accent-soft); overflow: hidden; }
 .goal-meter .meter i { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width .3s; }
 
+/* 环形图 */
+.pie { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: center; margin: 4px 0 18px; }
+.pie-chart { position: relative; width: 150px; height: 150px; }
+.pie-chart svg { width: 100%; height: 100%; display: block; touch-action: pan-y; }
+.pie .slice { stroke: var(--surface); stroke-width: 2; stroke-linejoin: round; transition: opacity .15s; }
+.pie svg.hovering .slice:not(.on) { opacity: .35; }
+.pie-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; padding: 0 30px; }
+.pie-center b { font-size: 15px; font-weight: 600; white-space: nowrap; }
+.pie-center small { color: var(--ink-3); font-size: 11px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pie-center .pc-name { color: var(--ink-2); font-size: 12px; }
+.pie-legend { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pl-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px; font-size: 13px; padding: 2px 6px; border-radius: 6px; cursor: default; }
+.pl-row i { width: 8px; height: 8px; border-radius: 2px; }
+.pl-row.on { background: var(--bg); }
+.pl-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
+.pl-pct { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 500; }
+@media (max-width: 340px) {
+  .pie { grid-template-columns: 1fr; justify-items: center; }
+  .pie-legend { width: 100%; }
+}
 .by-task .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; margin-bottom: 10px; font-size: 14px; }
 .by-task .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .by-task .val { color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 13px; }
